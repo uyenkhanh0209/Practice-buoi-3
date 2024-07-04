@@ -1,0 +1,66 @@
+--- Bài tập 1
+SELECT DISTINCT CITY from STATION
+WHERE ID%2=0;
+
+--- Bài tập 2
+SELECT (COUNT(CITY)-COUNT(DISTINCT(CITY))) FROM STATION;
+
+--- Bài tập 4
+SELECT 
+round(
+CAST(
+SUM (ITEM_COUNT*ORDER_OCCURRENCES)/SUM(order_occurrences) AS DECIMAL)
+,1) as mean
+from items_per_order;
+
+--- Bài tập 5
+select candidate_id from candidates
+where skill in('Python','Tableau','PostgreSQL')
+group by candidate_id
+having count (skill)=3
+ORDER BY candidate_id ASC; 
+
+--- Bài tập 6
+SELECT user_id, 
+DATE(MAX(POST_DATE))-DATE(MIN(POST_DATE)) AS days_between from posts
+WHERE post_date >='2021-01-01' and post_date<='2021-12-31'
+GROUP BY user_id
+HAVING COUNT(USER_ID)>=2;
+
+--- Bài tập 7 
+SELECT card_name,
+MAX(issued_amount)-min (issued_amount) as difference
+FROM monthly_cards_issued 
+GROUP BY card_name
+ORDER BY difference DESC;
+
+--- Bài tập 8 
+SELECT manufacturer, 
+COUNT(drug) as drug_count,
+sum (cogs-total_sales) as total_losses 
+from pharmacy_sales
+WHERE cogs>total_sales
+GROUP BY manufacturer 
+ORDER BY total_losses DESC;
+
+--- Bài tập 9  
+SELECT * from cinema
+where id%2=1 and description != 'boring'
+order by rating DESC
+
+--- Bài tập 10  
+SELECT teacher_id,
+COUNT(distinct(subject_id)) as cnt
+from teacher
+GROUP BY teacher_id;
+
+--- Bài tập 11
+SELECT user_id, 
+count(follower_id) as followers_count from followers 
+GROUP BY user_id
+ORDER BY user_id ASC;
+
+--- Bài tập 12
+SELECT class from courses
+group by class
+having count(class)>=5;
