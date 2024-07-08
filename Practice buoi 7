@@ -4,3 +4,55 @@ where marks >75
 order by right(name,3), ID
 
 --- Bài 2 
+SELECT user_id, 
+concat (upper(left(name,1)),lower(right(name,length(name)-1)))
+as name 
+from users
+ORDER BY user_id
+
+
+--- Bài 3
+SELECT manufacturer, 
+concat('$',round(sum(total_sales)/1000000),' ','million') 
+as sales FROM pharmacy_sales
+GROUP BY manufacturer 
+ORDER BY sum(total_sales) DESC, manufacturer ASC
+
+--- Bài 4
+SELECT round(AVG(stars),2) as avg_stars,
+product_id as product,
+extract(month from submit_date) as mth 
+FROM reviews
+GROUP BY product_id, extract(month from submit_date) 
+order by extract(month from submit_date) ASC
+
+--- Bài 5
+SELECT sender_id, count(content) as message_count from messages 
+WHERE EXTRACT (month from sent_date) =8
+AND EXTRACT (year from sent_date)=2022
+GROUP BY sender_id
+ORDER BY count(content) desc 
+LIMIT 2;
+
+--- Bài 6
+SELECT tweet_id from tweets 
+WHERE length(content) >=15
+
+--- Bài 7
+SELECT activity_date as day, count(distinct user_id) as active_users from activity 
+WHERE activity_date between '2019-06-28' and '2019-07-27'
+GROUP BY activity_date
+
+--- Bài 8 
+select count(id) as number_of_employees from employees
+WHERE extract(month from joining_date) between 1 and 7
+AND extract (year from joining_date)=2022
+
+--- Bài 9 
+select position('a' in first_name) from worker
+where first_name='Amitah'
+
+--- Bài 10 
+select substring(title, length(winery)+2,4)
+from winemag_p2
+where country ='Macedonia'
