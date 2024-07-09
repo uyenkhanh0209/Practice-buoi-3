@@ -1,0 +1,43 @@
+-- Bài 1
+SELECT 
+SUM (case
+     when device_type ='laptop' then 1 else 0 
+     end) as laptop_reviews, 
+SUM (case
+     when device_type in ('tablet','phone') then 1 else 0 
+     end) as mobile_views
+FROM viewership
+
+-- Bài 2
+SELECT x,y,z,
+CASE 
+WHEN x+y>z and y+z>x and z+x>y then 'Yes' else 'No'
+end as Triangle 
+from triangle
+
+-- Bài 3
+SELECT 
+    round(SUM (CASE 
+    WHEN call_category is null then 1 
+    WHEN call_category='n/a' then 1 
+    else 0 
+    END) *100.0/COUNT(*),1) as uncategorised_calls 
+  FROM callers
+
+-- Bài 4
+SELECT NAME FROM CUSTOMER 
+WHERE referee_id <> 2 or referee_id is NULL; 
+
+-- Bài 5 
+SELECT survived,
+ sum (case 
+      when pclass=1 then 1 else 0 
+      end) as first_class, 
+ sum (case 
+      when pclass=2 then 1 else 0
+      end) as second_class,
+sum (case 
+      when pclass=3 then 1 else 0
+      end) as third_class
+ from titanic 
+group by survived 
