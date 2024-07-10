@@ -1,0 +1,139 @@
+-- Bài 1
+SELECT country.continent, floor(avg(city.population)) 
+FROM city 
+INNER JOIN country 
+on city.countrycode = country.code 
+group by country.continent
+
+-- Bài 2  
+SELECT 
+round(SUM(case 
+       when signup_action ='Confirmed' then 1 else 0
+       end)*100/count(distinct emails.email_id),2) as confirm_rate
+FROM emails
+left join texts
+on emails.email_id=texts.email_id 
+
+-- Bài 3
+SELECT age_breakdown.age_bucket,
+     ROUND(100.0*SUM(activities.time_spent) filter 
+     (WHERE activities.activity_type='send')/SUM(activities.time_spent),2) 
+     as time_sending, 
+     ROUND(100*SUM(activities.time_spent) filter 
+     (WHERE activities.activity_type='open')/SUM(activities.time_spent),2) 
+     as time_opening
+FROM activities
+INNER JOIN age_breakdown 
+ON activities.user_id=age_breakdown.user_id
+WHERE activities.activity_type in ('send','open')
+GROUP BY age_breakdown.age_bucket
+
+-- Bài 4
+SELECT a.customer_id
+FROM customer_contracts as a
+JOIN products as b 
+on a.product_id=b.product_id
+group by a.customer_id 
+having count(distinct b.product_category)=3
+
+-- Bài 5
+SELECT employee.employee_id, employee.name, count(manager.employee_id) as reports_count, round(avg(manager.age)) as average_age
+FROM employees as employee
+JOIN employees as manager
+on employee.employee_id=manager.reports_to 
+group by employee.employee_id, employee.name
+ORDER BY employee.employee_id 
+
+-- Bài 6
+SELECT products.product_name, sum(orders.unit) as unit 
+FROM orders
+JOIN products
+on products.product_id=orders.product_id 
+where orders.order_date between '2020-02-01' and '2020-02-29'
+GROUP BY products.product_name
+HAVING sum(orders.unit)>=100 
+
+-- Bài 7
+SELECT pages.page_id
+FROM pages 
+left join page_likes 
+on pages.page_id=page_likes.page_id
+WHERE page_likes.liked_date is null
+ORDER BY pages.page_id ASC
+
+---- MID COURSE 
+-- Bài 1
+select distinct min(replacement_cost) from film 
+
+-- Bài 2
+select
+SUM (CASE
+	WHEN replacement_cost between 9.99 and 19.99 then 1  
+	ELSE 0 
+END) as low 
+from film 
+
+-- Bài 3
+select b.title, b.length, c.name, a.film_id 
+from film_category as a 
+inner join film as b 
+on a.film_id=b.film_id 
+inner join category as c 
+on a.category_id=c.category_id
+group by b.film_id,a.film_id, c.category_id
+having c.name in ('Drama','Sports')
+ORDER BY b.length DESC
+
+-- Bài 4
+select c.name, count(b.title)
+from film_category as a 
+inner join film as b 
+on a.film_id=b.film_id 
+inner join category as c 
+on a.category_id=c.category_id
+group by c.name
+order by count(b.title) desc
+
+-- Bài 5 (em không ra giống đáp án ạ TT)
+SELECT distinct c.first_name||' '||c.last_name as actor,
+	a.actor_id, count(a.film_id)
+FROM film_actor as a 
+inner join film as b 
+on a.film_id= b.film_id
+inner join actor as c 
+on a.actor_id= c.actor_id
+group by a.actor_id, c.first_name||' '||c.last_name
+order by count(a.film_id) desc
+
+-- Bài 6 
+SELECT count(a.address_id)
+FROM address as a 
+left join customer as b 
+on a.address_id=b.address_id 
+where b.address_id is NULL 
+
+-- Bài 7 
+SELECT d.city, sum(c.amount) as doanh_thu
+FROM customer as a 
+inner join address as b 
+on a.address_id=b.address_id 
+inner join payment as c 
+on c.customer_id=a.customer_id
+inner join city as d 
+on d.city_id=b.city_id 
+group by d.city
+order by sum(c.amount) desc
+
+-- Bài 8  
+SELECT d.city||','||e.country as city_country , sum(c.amount) as doanh_thu
+FROM customer as a 
+inner join address as b 
+on a.address_id=b.address_id 
+inner join payment as c 
+on c.customer_id=a.customer_id
+inner join city as d 
+on d.city_id=b.city_id 
+inner join country as e 
+on d.country_id=e.country_id 
+group by d.city||','||e.country
+order by sum(c.amount) desc
