@@ -1,0 +1,90 @@
+-- Bài 1
+with job_count_cte as (
+    select company_id, count (job_id) as job_count 
+    from job_listings 
+    group by company_id) 
+
+    select count(distinct company_id) as duplicate_companies 
+    from job_count_cte 
+    where job_count >1 
+-- Bài 2
+
+-- Bài 3
+with call_records as (
+select policy_holder_id, count (case_id) as call_count 
+from callers 
+group by policy_holder_id 
+having count(case_id) >=3)
+
+select count(policy_holder_id) as policy_holder_count 
+from call_records
+
+-- Bài 4
+SELECT pages.page_id
+FROM pages 
+left join page_likes 
+on pages.page_id=page_likes.page_id
+WHERE page_likes.liked_date is null
+ORDER BY pages.page_id ASC
+
+-- Bài 5
+SELECT LEFT(trans_date,7) as month,country, count(id) as trans_count,
+SUM(amount) as trans_total_amount,
+SUM(case when state="approved" then 1 else 0 end) as approved_count,
+SUM(case when state="approved" then amount else 0 end) as approved_total_amount 
+FROM Transactions
+GROUPBY month,country;
+
+-- Bài 6 
+
+-- Bài 7  
+SELECT product_id,year as first_year,quantity,price
+from sales
+where (product_id,year) in
+ (select product_id, min(year) 
+ from sales 
+ group by product_id)
+
+-- Bài 8  
+select customer_id 
+from customer 
+group by customer_id 
+having count(distinct product_key)>=(select count(product_key) from product)  
+
+-- Bài 9  
+select employee_id 
+from employees 
+where salary < 30000 and 
+manager_id not in (select employee_id from Employees)
+order by employee_id
+
+-- Bài 10 
+
+-- Bài 11 
+(SELECT a.name as results
+FROM users as a 
+JOIN movierating as b on a.user_id = b.user_id
+GROUP BY a.user_id
+ORDER BY count(movie_id) DESC, name ASC
+LIMIT 1)
+
+UNION ALL 
+
+(SELECT title as results
+FROM movies as c 
+JOIN movierating as b on b.movie_id = c.movie_id
+WHERE year(created_at) = '2020' and month(created_at) = '02'
+GROUP BY c.movie_id
+ORDER BY avg(rating) desc, title asc
+limit 1)
+
+-- Bài 12
+with new_table as
+(SELECT requester_id as id from requestaccepted
+UNION ALL
+SELECT accepter_id as id from requestaccepted)
+
+SELECT id, count(*) as num from new_table 
+GROUP BY 1 
+ORDER BY 2 DESC
+LIMIT 1
