@@ -1,0 +1,85 @@
+-- Bài 1
+WITH new_table AS 
+  (SELECT product_id,
+    SUM(spend) AS spend,
+    EXTRACT(YEAR FROM transaction_date) AS year
+  FROM user_transactions
+  GROUP BY product_id, year)
+
+SELECT a.year,
+  a.product_id,
+  a.spend AS curr_year_spend,
+  b.spend AS prev_year_spend,
+  ROUND(100* ((a.spend - b.spend) / b.spend) , 2) 
+  AS yoy_rate
+FROM new_table AS a 
+LEFT JOIN new_table AS b 
+ON a.product_id = b.product_id
+  AND (a.year -1) = b.year
+ORDER BY product_id, year
+
+-- Bài 2
+SELECT DISTINCT card_name,
+  FIRST_VALUE(issued_amount) 
+  OVER(PARTITION BY card_name ORDER BY issue_year,issue_month)
+  AS issued_amount
+FROM monthly_cards_issued
+ORDER BY issued_amount DESC
+
+-- Bài 3
+WITH new_table AS 
+(SELECT user_id,spend,transaction_date,
+RANK () OVER (PARTITION BY user_id ORDER BY transaction_date)
+AS t_date
+FROM transactions)
+
+SELECT user_id, spend, transaction_date
+FROM new_table 
+WHERE t_date = 3
+
+-- Bài 4
+SELECT transaction_date,user_id,
+COUNT(transaction_date) purchase_count
+FROM
+(SELECT *,
+    RANK() OVER(PARTITION BY user_id ORDER BY transaction_date DESC)
+    FROM user_transactions
+    ORDER BY user_id,transaction_date DESC) a
+WHERE rank = 1
+GROUP BY user_id,transaction_date
+ORDER BY transaction_date
+
+-- Bài 5
+
+-- Bài 6
+select count(*) as payment_count
+from transactions t1,transactions t2
+WHERE
+t1.transaction_id < t2.transaction_id and
+t1.merchant_id=t2.merchant_id AND
+t1.credit_card_id=t2.credit_card_id and
+t1.amount=t2.amount AND
+EXTRACT(EPOCH FROM t2.transaction_timestamp - t1.transaction_timestamp)/60<=10;
+
+-- Bài 7 
+SELECT category, product, total_spend 
+FROM (SELECT category, product, sum(spend) AS total_spend,
+  DENSE_RANK() OVER (PARTITION BY category ORDER BY sum(spend) DESC) AS dense_rank 
+  FROM product_spend
+  WHERE EXTRACT(YEAR FROM transaction_date) = 2022
+  GROUP BY category, product) as highestproduct
+WHERE dense_rank <= 2
+
+-- Bài 8  
+with artist_counts as 
+(SELECT artist_name,
+    DENSE_RANK() OVER(ORDER BY COUNT(*) desc) as artist_rank 
+  FROM global_song_rank
+  LEFT JOIN songs USING(song_id)
+  LEFT JOIN artists USING(artist_id)
+  WHERE global_song_rank.rank <= 10
+  GROUP BY artist_name)
+  
+SELECT * 
+FROM artist_counts
+WHERE artist_rank <= 5
