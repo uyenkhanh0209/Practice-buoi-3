@@ -1,0 +1,74 @@
+-- 1) Chuyển đổi kiểu dữ liệu phù hợp cho các trường ( sử dụng câu lệnh ALTER)
+ALTER TABLE SALES_DATASET_RFM_PRJ 
+ALTER COLUMN  ordernumber TYPE numeric 
+USING (trim(  ordernumber )::numeric);
+....
+ALTER TABLE SALES_DATASET_RFM_PRJ 
+ALTER COLUMN  orderdate TYPE TIMESTAMP
+USING (trim(  orderdate )::TIMESTAMP); 
+....
+
+-- 2) Check NULL/BLANK (‘’)  ở các trường: ORDERNUMBER, QUANTITYORDERED, PRICEEACH, ORDERLINENUMBER, SALES, ORDERDATE.
+select ordernumber,
+	QUANTITYORDERED, 
+	PRICEEACH, 
+	ORDERLINENUMBER, 
+	SALES, 
+	ORDERDATE
+from SALES_DATASET_RFM_PRJ
+where ordernumber is NULL 
+or PRICEEACH is null 
+or ORDERLINENUMBER is null 
+or SALES is null 
+or ORDERDATE is null 
+
+-- 3) Thêm cột CONTACTLASTNAME, CONTACTFIRSTNAME được tách ra từ CONTACTFULLNAME . 
+Chuẩn hóa CONTACTLASTNAME, CONTACTFIRSTNAME theo định dạng chữ cái đầu tiên viết hoa, chữ cái tiếp theo viết thường. 
+Gợi ý: ( ADD column sau đó UPDATE)
+
+ALTER TABLE SALES_DATASET_RFM_PRJ
+ADD COLUMN contactfirstname VARCHAR (50),
+ADD COLUMN contactlastname VARCHAR (50)
+
+UPDATE SALES_DATASET_RFM_PRJ
+SET contactfirstname= 
+UPPER(left(contactfullname, position('-' IN contactfullname)-1))
+
+UPDATE SALES_DATASET_RFM_PRJ
+SET contactlastname= 
+UPPER(right(contactfullname, length(contactfullname) - position('-' IN contactfullname)))
+
+-- 4) Thêm cột QTR_ID, MONTH_ID, YEAR_ID lần lượt là Qúy, tháng, năm được lấy ra từ ORDERDATE 
+
+ALTER TABLE SALES_DATASET_RFM_PRJ
+ADD COLUMN QTR_ID NUMERIC,
+ADD COLUMN MONTH_ID NUMERIC,
+ADD COLUMN YEAR_ID NUMERIC 
+
+UPDATE SALES_DATASET_RFM_PRJ
+SET MONTH_ID= 
+EXTRACT (MONTH FROM ORDERDATE)
+
+UPDATE SALES_DATASET_RFM_PRJ
+SET YEAR_ID= 
+EXTRACT (YEAR FROM ORDERDATE)
+
+UPDATE SALES_DATASET_RFM_PRJ
+SET QTR_ID= 
+CASE WHEN EXTRACT (MONTH FROM ORDERDATE) IN (1,2,3) THEN 1 
+	 WHEN EXTRACT (MONTH FROM ORDERDATE) IN (4,5,6) THEN 2
+     WHEN EXTRACT (MONTH FROM ORDERDATE) IN (7,8,9) THEN 3 
+	ELSE 04
+END
+
+
+
+
+
+
+
+
+
+
+
+
