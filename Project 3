@@ -4,4 +4,33 @@ sum (sales) as revenue from sales_dataset_rfm_prj
 where status ='Shipped'
 group by productline, year_id, dealsize
 
---- 2) Đâu là tháng bán tốt nhất mỗi năm?
+--- 2) Đâu là tháng có bán tốt nhất mỗi năm?
+Output: MONTH_ID, REVENUE, ORDER_NUMBER
+--- 3) Product line nào được bán nhiều ở tháng 11?
+Output: MONTH_ID, REVENUE, ORDER_NUMBER
+--- 4) Đâu là sản phẩm có doanh thu tốt nhất ở UK mỗi năm? 
+Xếp hạng các các doanh thu đó theo từng năm.
+Output: YEAR_ID, PRODUCTLINE,REVENUE, RANK
+
+--- 5) Ai là khách hàng tốt nhất, phân tích dựa vào RFM 
+WITH customer_rfm as 
+(select b.customerid, 
+current_date - MAX(a.orderdate) as R, 
+count (distinct a.ordernumber) as F,
+sum (a.sales) as M
+from sales_dataset_rfm_prj as a 
+JOIN online_retail as b
+on a.country=b.country 
+group by b.customerid) 
+, rfm_score as 
+(select customerid, 
+ntile (5) OVER (ORDER BY R DESC) as R_score, 
+ntile (5) OVER (ORDER BY F) as F_score, 
+ntile (5) OVER (ORDER BY M) as M_score 
+from customer_rfm)
+, rfm_final as 
+(SELECT customerid, 
+CAST (R_score as VARCHAR)||CAST (F_score as VARCHAR)||CAST(M_score as VARCHAR) as rfm_score 
+from rfm_score) 
+
+SELECT * FROM rfm_final 
